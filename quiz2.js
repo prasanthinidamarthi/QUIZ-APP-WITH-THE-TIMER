@@ -9,14 +9,27 @@ const option_list = document.querySelector(".option_list");
 const time_line = document.querySelector("header .time_line");
 const timeText = document.querySelector(".timer .time_left_txt");
 const timeCount = document.querySelector(".timer .timer_sec");
+const body = document.querySelector("body");
+const quesAns = document.querySelector(".faqs");
+const labels = quesAns.querySelectorAll("label");
+const backBtn = quesAns.querySelector(".back");
+console.log(backBtn);
 // if startQuiz button clicked
 start_btn.onclick = ()=>{
+    console.log(info_box.classList);
     info_box.classList.add("activeInfo"); //show info box
 }
 
 // if exitQuiz button clicked
 exit_btn.onclick = ()=>{
     info_box.classList.remove("activeInfo"); //hide info box
+}
+
+backBtn.onclick= () =>{
+    body.classList.add("resultBackground");
+    quesAns.classList.remove("activeFaqs");
+    result_box.classList.add("activeResult");
+    console.log(this);
 }
 
 // if continueQuiz button clicked
@@ -39,9 +52,35 @@ let widthValue = 0;
 
 const restart_quiz = result_box.querySelector(".buttons .restart");
 const quit_quiz = result_box.querySelector(".buttons .quit");
+const showAnswers = result_box.querySelector(".buttons .viewAnswers");
+
+
+showAnswers.onclick =()=>{
+    body.classList.remove("resultBackground");
+    quesAns.classList.add("activeFaqs");
+    result_box.classList.remove("activeResult");
+}
+
+function displayAnswer(){
+    const classs = `${this.classList.value}s`;
+    const value = this.innerHTML;
+    console.log(value);
+    if(value == "―"){
+        console.log(document.getElementById(classs).classList);
+        document.getElementById(classs).classList.remove("click");
+        this.innerHTML = "⏷"
+    }else{
+        console.log(document.getElementById(classs).classList);
+        document.getElementById(classs).classList.add("click");
+        this.innerHTML = "―"
+    }
+}
+
+labels.forEach(input => input.addEventListener('click', displayAnswer));
 
 // if restartQuiz button clicked
 restart_quiz.onclick = ()=>{
+    body.classList.remove("resultBackground");
     quiz_box.classList.add("activeQuiz"); //show quiz box
     result_box.classList.remove("activeResult"); //hide result box
     timeValue = 10; 
@@ -58,7 +97,6 @@ restart_quiz.onclick = ()=>{
     timeText.textContent = "Time Left"; //change the text of timeText to Time Left
     next_btn.classList.remove("show"); //hide the next button
 }
-
 // if quitQuiz button clicked
 quit_quiz.onclick = ()=>{
     window.location.reload(); //reload the current window
@@ -66,9 +104,9 @@ quit_quiz.onclick = ()=>{
 
 const next_btn = document.querySelector("footer .next_btn");
 const bottom_ques_counter = document.querySelector("footer .total_que");
-
+next_btn.addEventListener('click',nextQuestion);
 // if Next Que button clicked
-next_btn.onclick = ()=>{
+function nextQuestion(){
     if(que_count < questions.length - 1){ //if question count is less than total question length
         que_count++; //increment the que_count value
         que_numb++; //increment the que_numb value
@@ -90,7 +128,6 @@ next_btn.onclick = ()=>{
 // getting questions and options from array
 function showQuetions(index){
     const que_text = document.querySelector(".que_text");
-
     //creating a new span and div tag for question and option and passing the value using array index
     let que_tag = '<span>'+ questions[index].numb + ". " + questions[index].question +'</span>';
     let option_tag = '<div class="option"><span>'+ questions[index].options[0] +'</span></div>'
@@ -99,7 +136,6 @@ function showQuetions(index){
     + '<div class="option"><span>'+ questions[index].options[3] +'</span></div>';
     que_text.innerHTML = que_tag; //adding new span tag inside que_tag
     option_list.innerHTML = option_tag; //adding new div tag inside option_tag
-    
     const option = option_list.querySelectorAll(".option");
 
     // set onclick attribute to all available options
@@ -118,28 +154,15 @@ function optionSelected(answer){
     let userAns = answer.textContent; //getting user selected option
     let correcAns = questions[que_count].answer; //getting correct answer from array
     const allOptions = option_list.children.length; //getting all option items
-    
+    const option = option_list.querySelectorAll(".option");
+    //console.log(option);
+    for(i=0; i < option.length; i++){
+        if(option[i].style.backgroundColor === "rgb(170, 92, 219)")
+            return;
+    }
+    answer.style.backgroundColor = "hsl(277, 64%, 61%)";
     if(userAns == correcAns){ //if user selected option is equal to array's correct answer
         userScore += 1; //upgrading score value with 1
-        answer.classList.add("correct"); //adding green color to correct selected option
-        answer.insertAdjacentHTML("beforeend", tickIconTag); //adding tick icon to correct selected option
-        console.log("Correct Answer");
-        console.log("Your correct answers = " + userScore);
-    }else{
-        answer.classList.add("incorrect"); //adding red color to correct selected option
-        answer.insertAdjacentHTML("beforeend", crossIconTag); //adding cross icon to correct selected option
-        console.log("Wrong Answer");
-
-        for(i=0; i < allOptions; i++){
-            if(option_list.children[i].textContent == correcAns){ //if there is an option which is matched to an array answer 
-                option_list.children[i].setAttribute("class", "option correct"); //adding green color to matched option
-                option_list.children[i].insertAdjacentHTML("beforeend", tickIconTag); //adding tick icon to matched option
-                console.log("Auto selected correct answer.");
-            }
-        }
-    }
-    for(i=0; i < allOptions; i++){
-        option_list.children[i].classList.add("disabled"); //once user select an option then disabled all options
     }
     next_btn.classList.add("show"); //show the next button if user selected any option
 }
@@ -148,6 +171,7 @@ function showResult(){
     info_box.classList.remove("activeInfo"); //hide info box
     quiz_box.classList.remove("activeQuiz"); //hide quiz box
     result_box.classList.add("activeResult"); //show result box
+    body.classList.add("resultBackground");
     const scoreText = result_box.querySelector(".score_text");
     if (userScore > 8){ // if user scored more than 3
         //creating a new span tag and passing the user score number and total question number
@@ -178,17 +202,7 @@ function startTimer(time){
             timeText.textContent = "Time Off"; //change the time text to time off
             const allOptions = option_list.children.length; //getting all option items
             let correcAns = questions[que_count].answer; //getting correct answer from array
-            for(i=0; i < allOptions; i++){
-                if(option_list.children[i].textContent == correcAns){ //if there is an option which is matched to an array answer
-                    option_list.children[i].setAttribute("class", "option correct"); //adding green color to matched option
-                    option_list.children[i].insertAdjacentHTML("beforeend", tickIconTag); //adding tick icon to matched option
-                    console.log("Time Off: Auto selected correct answer.");
-                }
-            }
-            for(i=0; i < allOptions; i++){
-                option_list.children[i].classList.add("disabled"); //once user select an option then disabled all options
-            }
-            next_btn.classList.add("show"); //show the next button if user selected any option
+            nextQuestion();
         }
     }
 }
@@ -197,7 +211,7 @@ function startTimerLine(time){
     counterLine = setInterval(timer, 29);
     function timer(){
         time += 1; //upgrading time value with 1
-        time_line.style.width = time + "px"; //increasing width of time_line with px by time value
+        time_line.style.width = time*(5/3) + "px"; //increasing width of time_line with px by time value
         if(time > 549){ //if time value is greater than 549
             clearInterval(counterLine); //clear counterLine
         }
